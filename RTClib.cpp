@@ -6,12 +6,14 @@
 #include "RTClib.h"
 #include <Arduino.h>
 
-#define DS1307_ADDRESS      0x68
+#define DS1307_ADDRESS          0x68
+#define DS1307_CONTROL_REGISTER 0x07
+#define DS1307_RAM_REGISTER     0x08
 
-#define PCF8563_ADDRESS     0x51
-#define PCF8563_SEC_ADDR    0x02
+#define PCF8563_ADDRESS         0x51
+#define PCF8563_SEC_ADDR        0x02
 
-#define SECONDS_PER_DAY     86400L
+#define SECONDS_PER_DAY         86400L
 
 ////////////////////////////////////////////////////////////////////////////////
 // utility code, some of this could be exposed in the DateTime API if needed
@@ -148,6 +150,46 @@ DateTime RTC_DS1307::now() {
     uint16_t y = bcd2bin(Wire.read()) + 2000;
     
     return DateTime (y, m, d, hh, mm, ss);
+}
+
+uint8_t RTC_DS1307::readByteInRam(uint8_t address) {
+    Wire.beginTransmission(DS1307_ADDRESS);
+  	Wire.write(address);	
+    Wire.endTransmission();
+
+    Wire.requestFrom(DS1307_ADDRESS, 1);
+    uint8_t data = Wire.read();
+    Wire.endTransmission();
+    
+    return data;
+}
+
+void RTC_DS1307::readBytesInRam(uint8_t address, uint8_t length, uint8_t* p_data) {
+    Wire.beginTransmission(DS1307_ADDRESS);
+  	Wire.write(address);	
+    Wire.endTransmission();
+
+    Wire.requestFrom(DS1307_ADDRESS, (int)length);
+    for (uint8_t i = 0; i < length; i++) {
+        p_data[i] = Wire.read();
+    }
+    Wire.endTransmission();
+}
+
+void RTC_DS1307::writeByteInRam(uint8_t address, uint8_t data) {
+    Wire.beginTransmission(DS1307_ADDRESS);
+  	Wire.write(address);	
+  	Wire.write(data);
+    Wire.endTransmission();
+}
+
+void RTC_DS1307::writeBytesInRam(uint8_t address, uint8_t length, uint8_t* p_data) {
+    Wire.beginTransmission(DS1307_ADDRESS);
+  	Wire.write(address);	
+  	for (uint8_t i = 0; i < length; i++) {
+  	  	Wire.write(p_data[i]);
+  	}
+    Wire.endTransmission();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

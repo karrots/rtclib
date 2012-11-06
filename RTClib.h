@@ -30,6 +30,13 @@ public:
     static void begin() {}
     static void adjust(const DateTime& dt);
     static DateTime now();
+    
+    // RAM registers read/write functions. Address locations 08h to 3Fh.
+    // Max length = 56 bytes.
+    static uint8_t readByteInRam(uint8_t address);
+    static void readBytesInRam(uint8_t address, uint8_t length, uint8_t* p_data);
+    static void writeByteInRam(uint8_t address, uint8_t data);
+    static void writeBytesInRam(uint8_t address, uint8_t length, uint8_t* p_data);
 
     // utility functions
     static uint8_t bcd2bin (uint8_t val) { return val - 6 * (val >> 4); }
