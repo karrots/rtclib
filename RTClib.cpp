@@ -12,12 +12,11 @@
 #define DS1307_CONTROL_REGISTER 0x07
 #define DS1307_RAM_REGISTER     0x08
 
-#define RTC_DS1307__SQWE        0x10
-#define RTC_DS1307__OUT         0x80
-#define RTC_DS1307__F_1HZ       0x00
-#define RTC_DS1307__F_4096Hz    0x01
-#define RTC_DS1307__F_8192Hz    0x02
-#define RTC_DS1307__F_32768Hz   0x03
+// DS1307 Control register bits.
+#define RTC_DS1307__RS0         0x00
+#define RTC_DS1307__RS1         0x01
+#define RTC_DS1307__SQWE        0x04
+#define RTC_DS1307__OUT         0x07
 
 #define PCF8563_ADDRESS         0x51
 #define PCF8563_SEC_ADDR        0x02
@@ -162,7 +161,7 @@ DateTime RTC_DS1307::now() {
 }
 
 void RTC_DS1307::setSqwOutLevel(uint8_t level) {
-    uint8_t value = (level == LOW) ? 0x00 : RTC_DS1307__OUT;  
+    uint8_t value = (level == LOW) ? 0x00 : (1 << RTC_DS1307__OUT);  
     Wire.beginTransmission(DS1307_ADDRESS);
   	Wire.write(DS1307_CONTROL_REGISTER);	
   	Wire.write(value);
@@ -170,22 +169,21 @@ void RTC_DS1307::setSqwOutLevel(uint8_t level) {
 }
 
 void RTC_DS1307::setSqwOutSignal(Frequencies frequency) {
-    uint8_t value = RTC_DS1307__SQWE;
+    uint8_t value = (1 << RTC_DS1307__SQWE);
     switch (frequency)
     {
         case Frequency_1Hz:
-            value |= RTC_DS1307__F_1HZ;
+            // Nothing to do.
         break;
         case Frequency_4096Hz:
-            value |= RTC_DS1307__F_4096Hz;
+            value |= (1 << RTC_DS1307__RS0);
         break;
         case Frequency_8192Hz:
-            value |= RTC_DS1307__F_8192Hz;
+            value |= (1 << RTC_DS1307__RS1);
         break;
         case Frequency_32768Hz:
-            value |= RTC_DS1307__F_32768Hz;
-        break;
         default:
+            value |= (1 << RTC_DS1307__RS1) | (1 << RTC_DS1307__RS0);
         break;
     }
     Wire.beginTransmission(DS1307_ADDRESS);
