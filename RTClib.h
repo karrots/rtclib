@@ -1,5 +1,7 @@
 // A library for handling real-time clocks, dates, etc.
 // 2010-02-04 <jc@wippler.nl> http://opensource.org/licenses/mit-license.php
+// 2012-11-08 RAM methods - idreammicro.com
+// 2012-11-14 SQW/OUT methods - idreammicro.com
 
 // Simple general-purpose date/time class (no TZ / DST / leap second handling!)
 class DateTime {
@@ -27,9 +29,23 @@ protected:
 // RTC based on the DS1307 chip connected via I2C and the Wire library
 class RTC_DS1307 {
 public:
+    
+    // SQW/OUT frequencies.
+    enum Frequencies
+    {
+        Frequency_1Hz,
+        Frequency_4096Hz,
+        Frequency_8192Hz,
+        Frequency_32768Hz
+    };
+
     static void begin() {}
     static void adjust(const DateTime& dt);
     static DateTime now();
+    
+    // SQW/OUT functions.
+    void setSqwOutLevel(uint8_t level);
+    void setSqwOutSignal(Frequencies frequency);
     
     // RAM registers read/write functions. Address locations 08h to 3Fh.
     // Max length = 56 bytes.

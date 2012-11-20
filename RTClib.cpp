@@ -1,5 +1,7 @@
 // A library for handling real-time clocks, dates, etc.
 // 2010-02-04 <jc@wippler.nl> http://opensource.org/licenses/mit-license.php
+// 2012-11-08 RAM methods - idreammicro.com
+// 2012-11-14 SQW/OUT methods - idreammicro.com
 
 #include <Wire.h>
 #include <avr/pgmspace.h>
@@ -9,6 +11,12 @@
 #define DS1307_ADDRESS          0x68
 #define DS1307_CONTROL_REGISTER 0x07
 #define DS1307_RAM_REGISTER     0x08
+
+// DS1307 Control register bits.
+#define RTC_DS1307__RS0         0x00
+#define RTC_DS1307__RS1         0x01
+#define RTC_DS1307__SQWE        0x04
+#define RTC_DS1307__OUT         0x07
 
 #define PCF8563_ADDRESS         0x51
 #define PCF8563_SEC_ADDR        0x02
@@ -150,6 +158,38 @@ DateTime RTC_DS1307::now() {
     uint16_t y = bcd2bin(Wire.read()) + 2000;
     
     return DateTime (y, m, d, hh, mm, ss);
+}
+
+void RTC_DS1307::setSqwOutLevel(uint8_t level) {
+    uint8_t value = (level == LOW) ? 0x00 : (1 << RTC_DS1307__OUT);  
+    Wire.beginTransmission(DS1307_ADDRESS);
+  	Wire.write(DS1307_CONTROL_REGISTER);	
+  	Wire.write(value);
+    Wire.endTransmission();
+}
+
+void RTC_DS1307::setSqwOutSignal(Frequencies frequency) {
+    uint8_t value = (1 << RTC_DS1307__SQWE);
+    switch (frequency)
+    {
+        case Frequency_1Hz:
+            // Nothing to do.
+        break;
+        case Frequency_4096Hz:
+            value |= (1 << RTC_DS1307__RS0);
+        break;
+        case Frequency_8192Hz:
+            value |= (1 << RTC_DS1307__RS1);
+        break;
+        case Frequency_32768Hz:
+        default:
+            value |= (1 << RTC_DS1307__RS1) | (1 << RTC_DS1307__RS0);
+        break;
+    }
+    Wire.beginTransmission(DS1307_ADDRESS);
+  	Wire.write(DS1307_CONTROL_REGISTER);	
+  	Wire.write(value);
+    Wire.endTransmission();
 }
 
 uint8_t RTC_DS1307::readByteInRam(uint8_t address) {
