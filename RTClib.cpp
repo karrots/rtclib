@@ -99,7 +99,7 @@ static uint8_t conv2d(const char* p) {
 DateTime::DateTime (const char* date, const char* time) {
     // sample input: date = "Dec 26 2009", time = "12:34:56"
     yOff = conv2d(date + 9);
-    // Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec 
+    // Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
     switch (date[0]) {
         case 'J': m = date[1] == 'a' ? 1 : m = date[2] == 'n' ? 6 : 7; break;
         case 'F': m = 2; break;
@@ -116,7 +116,7 @@ DateTime::DateTime (const char* date, const char* time) {
     ss = conv2d(time + 6);
 }
 
-uint8_t DateTime::dayOfWeek() const {    
+uint8_t DateTime::dayOfWeek() const {
     uint16_t day = get() / SECONDS_PER_DAY;
     return (day + 6) % 7; // Jan 1, 2000 is a Saturday, i.e. returns 6
 }
@@ -145,7 +145,7 @@ void RTC_DS1307::adjust(const DateTime& dt) {
 
 DateTime RTC_DS1307::now() {
   	Wire.beginTransmission(DS1307_ADDRESS);
-  	Wire.write((byte) 0);	
+  	Wire.write((byte) 0);
     Wire.endTransmission();
 
     Wire.requestFrom(DS1307_ADDRESS, 7);
@@ -156,14 +156,14 @@ DateTime RTC_DS1307::now() {
     uint8_t d = bcd2bin(Wire.read());
     uint8_t m = bcd2bin(Wire.read());
     uint16_t y = bcd2bin(Wire.read()) + 2000;
-    
+
     return DateTime (y, m, d, hh, mm, ss);
 }
 
 void RTC_DS1307::setSqwOutLevel(uint8_t level) {
-    uint8_t value = (level == LOW) ? 0x00 : (1 << RTC_DS1307__OUT);  
+    uint8_t value = (level == LOW) ? 0x00 : (1 << RTC_DS1307__OUT);
     Wire.beginTransmission(DS1307_ADDRESS);
-  	Wire.write(DS1307_CONTROL_REGISTER);	
+  	Wire.write(DS1307_CONTROL_REGISTER);
   	Wire.write(value);
     Wire.endTransmission();
 }
@@ -187,26 +187,26 @@ void RTC_DS1307::setSqwOutSignal(Frequencies frequency) {
         break;
     }
     Wire.beginTransmission(DS1307_ADDRESS);
-  	Wire.write(DS1307_CONTROL_REGISTER);	
+  	Wire.write(DS1307_CONTROL_REGISTER);
   	Wire.write(value);
     Wire.endTransmission();
 }
 
 uint8_t RTC_DS1307::readByteInRam(uint8_t address) {
     Wire.beginTransmission(DS1307_ADDRESS);
-  	Wire.write(address);	
+  	Wire.write(address);
     Wire.endTransmission();
 
     Wire.requestFrom(DS1307_ADDRESS, 1);
     uint8_t data = Wire.read();
     Wire.endTransmission();
-    
+
     return data;
 }
 
 void RTC_DS1307::readBytesInRam(uint8_t address, uint8_t length, uint8_t* p_data) {
     Wire.beginTransmission(DS1307_ADDRESS);
-  	Wire.write(address);	
+  	Wire.write(address);
     Wire.endTransmission();
 
     Wire.requestFrom(DS1307_ADDRESS, (int)length);
@@ -218,19 +218,66 @@ void RTC_DS1307::readBytesInRam(uint8_t address, uint8_t length, uint8_t* p_data
 
 void RTC_DS1307::writeByteInRam(uint8_t address, uint8_t data) {
     Wire.beginTransmission(DS1307_ADDRESS);
-  	Wire.write(address);	
+  	Wire.write(address);
   	Wire.write(data);
     Wire.endTransmission();
 }
 
 void RTC_DS1307::writeBytesInRam(uint8_t address, uint8_t length, uint8_t* p_data) {
     Wire.beginTransmission(DS1307_ADDRESS);
-  	Wire.write(address);	
+  	Wire.write(address);
   	for (uint8_t i = 0; i < length; i++) {
   	  	Wire.write(p_data[i]);
   	}
     Wire.endTransmission();
 }
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// DS 1388 implementation
+
+
+
+void RTC_DS1388::adjust(const DateTime& dt) {
+    Wire.beginTransmission(DS1307_ADDRESS);
+    Wire.write((byte) 0);
+    Wire.write(bin2bcd(0)); // hundreds of seconds 0x00
+    Wire.write(bin2bcd(dt.second())); // 0x01
+    Wire.write(bin2bcd(dt.minute())); // 0x02
+    Wire.write(bin2bcd(dt.hour())); // 0x03
+    Wire.write(bin2bcd(0)); // 0x04
+    Wire.write(bin2bcd(dt.day())); // 0x05
+    Wire.write(bin2bcd(dt.month())); // 0x06
+    Wire.write(bin2bcd(dt.year() - 2000)); // 0x07
+    /*
+    Wire.write(i); // 0x08
+    Wire.write(i); // 0x09
+    Wire.write(i); // 0x0A
+    Wire.write(i); // 0x0B
+    Wire.write(i); // 0x0C
+    */
+    Wire.endTransmission();
+}
+
+DateTime RTC_DS1388::now() {
+  Wire.beginTransmission(DS1307_ADDRESS);
+  Wire.write((byte) 0);
+  Wire.endTransmission();
+
+  Wire.requestFrom(DS1307_ADDRESS, 8);
+  uint8_t hs = bcd2bin(Wire.read() & 0x7F);  // hundreds of seconds
+  uint8_t ss = bcd2bin(Wire.read() & 0x7F);
+  uint8_t mm = bcd2bin(Wire.read());
+  uint8_t hh = bcd2bin(Wire.read());
+  Wire.read();
+  uint8_t d = bcd2bin(Wire.read());
+  uint8_t m = bcd2bin(Wire.read());
+  uint16_t y = bcd2bin(Wire.read()) + 2000;
+
+  return DateTime (y, m, d, hh, mm, ss);
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // RTC_PCF8563 implementation
@@ -270,7 +317,7 @@ DateTime RTC_PCF8563::now() {
     Wire.read();
     uint8_t m = bcd2bin(Wire.read()& 0x1F);
     uint16_t y = bcd2bin(Wire.read()) + 2000;
-    
+
     return DateTime (y, m, d, hh, mm, ss);
 }
 
