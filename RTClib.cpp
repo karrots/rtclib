@@ -246,22 +246,22 @@ uint8_t RTC_DS1307::isrunning(void) {
 // DS 1388 implementation
 
 void RTC_DS1388::adjust(const DateTime& dt) {
-    Wire.beginTransmission(DS1307_ADDRESS);
-    Wire.write((byte) 0);
-    Wire.write(bin2bcd(0)); // hundreds of seconds 0x00
-    Wire.write(bin2bcd(dt.second())); // 0x01
-    Wire.write(bin2bcd(dt.minute())); // 0x02
-    Wire.write(bin2bcd(dt.hour())); // 0x03
-    Wire.write(bin2bcd(0)); // 0x04
-    Wire.write(bin2bcd(dt.day())); // 0x05
-    Wire.write(bin2bcd(dt.month())); // 0x06
-    Wire.write(bin2bcd(dt.year() - 2000)); // 0x07
-    Wire.endTransmission();
+  Wire.beginTransmission(DS1307_ADDRESS);
+  Wire.write((byte) 0);
+  Wire.write(bin2bcd(0)); // hundreds of seconds 0x00
+  Wire.write(bin2bcd(dt.second())); // 0x01
+  Wire.write(bin2bcd(dt.minute())); // 0x02
+  Wire.write(bin2bcd(dt.hour())); // 0x03
+  Wire.write(bin2bcd(0)); // 0x04
+  Wire.write(bin2bcd(dt.day())); // 0x05
+  Wire.write(bin2bcd(dt.month())); // 0x06
+  Wire.write(bin2bcd(dt.year() - 2000)); // 0x07
+  Wire.endTransmission();
 
-	Wire.beginTransmission(DS1307_ADDRESS);
-	Wire.write((byte) 0x0b);
-	Wire.write((byte) 0x00);			//clear the 'time is invalid ' flag bit (OSF)
-	Wire.endTransmission();
+  Wire.beginTransmission(DS1307_ADDRESS);
+  Wire.write((byte) 0x0b);
+  Wire.write((byte) 0x00);			//clear the 'time is invalid ' flag bit (OSF)
+  Wire.endTransmission();
 }
 
 DateTime RTC_DS1388::now() {
