@@ -234,11 +234,11 @@ void RTC_DS1307::writeBytesInRam(uint8_t address, uint8_t length, uint8_t* p_dat
 
 uint8_t RTC_DS1307::isrunning(void) {
   Wire.beginTransmission(DS1307_ADDRESS);
-  Wire.send(i);	
+  Wire.write(0x00);	
   Wire.endTransmission();
 
   Wire.requestFrom(DS1307_ADDRESS, 1);
-  uint8_t ss = Wire.receive();
+  uint8_t ss = Wire.read();
   return !(ss>>7);
 }
 
