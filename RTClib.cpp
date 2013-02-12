@@ -144,8 +144,8 @@ void RTC_DS1307::adjust(const DateTime& dt) {
 }
 
 DateTime RTC_DS1307::now() {
-  	Wire.beginTransmission(DS1307_ADDRESS);
-  	Wire.write((byte) 0);
+    Wire.beginTransmission(DS1307_ADDRESS);
+    Wire.write((byte) 0);
     Wire.endTransmission();
 
     Wire.requestFrom(DS1307_ADDRESS, 7);
@@ -163,8 +163,8 @@ DateTime RTC_DS1307::now() {
 void RTC_DS1307::setSqwOutLevel(uint8_t level) {
     uint8_t value = (level == LOW) ? 0x00 : (1 << RTC_DS1307__OUT);
     Wire.beginTransmission(DS1307_ADDRESS);
-  	Wire.write(DS1307_CONTROL_REGISTER);
-  	Wire.write(value);
+    Wire.write(DS1307_CONTROL_REGISTER);
+    Wire.write(value);
     Wire.endTransmission();
 }
 
@@ -232,12 +232,18 @@ void RTC_DS1307::writeBytesInRam(uint8_t address, uint8_t length, uint8_t* p_dat
     Wire.endTransmission();
 }
 
+uint8_t RTC_DS1307::isrunning(void) {
+  Wire.beginTransmission(DS1307_ADDRESS);
+  Wire.send(i);	
+  Wire.endTransmission();
 
+  Wire.requestFrom(DS1307_ADDRESS, 1);
+  uint8_t ss = Wire.receive();
+  return !(ss>>7);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // DS 1388 implementation
-
-
 
 void RTC_DS1388::adjust(const DateTime& dt) {
     Wire.beginTransmission(DS1307_ADDRESS);
@@ -250,14 +256,12 @@ void RTC_DS1388::adjust(const DateTime& dt) {
     Wire.write(bin2bcd(dt.day())); // 0x05
     Wire.write(bin2bcd(dt.month())); // 0x06
     Wire.write(bin2bcd(dt.year() - 2000)); // 0x07
-    /*
-    Wire.write(i); // 0x08
-    Wire.write(i); // 0x09
-    Wire.write(i); // 0x0A
-    Wire.write(i); // 0x0B
-    Wire.write(i); // 0x0C
-    */
     Wire.endTransmission();
+
+	Wire.beginTransmission(DS1307_ADDRESS);
+	Wire.write((byte) 0x0b);
+	Wire.write((byte) 0x00);			//clear the 'time is invalid ' flag bit (OSF)
+	Wire.endTransmission();
 }
 
 DateTime RTC_DS1388::now() {
@@ -278,6 +282,15 @@ DateTime RTC_DS1388::now() {
   return DateTime (y, m, d, hh, mm, ss);
 }
 
+uint8_t RTC_DS1388::isrunning() {
+  Wire.beginTransmission(DS1307_ADDRESS);
+  Wire.write((byte)0x0b);	
+  Wire.endTransmission();
+
+  Wire.requestFrom(DS1307_ADDRESS, 1);
+  uint8_t ss = Wire.read();
+  return !(ss>>7); //OSF flag bit
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // RTC_PCF8563 implementation
