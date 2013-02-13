@@ -42,6 +42,7 @@ public:
     static void begin() {}
     static void adjust(const DateTime& dt);
     static DateTime now();
+    static uint8_t isrunning();
 
     // SQW/OUT functions.
     void setSqwOutLevel(uint8_t level);
@@ -66,10 +67,11 @@ public:
     static void begin() {};
     static void adjust(const DateTime& dt);
     static DateTime now();
+    static uint8_t isrunning();
+
     // utility functions
     static uint8_t bcd2bin (uint8_t val) { return val - 6 * (val >> 4); }
     static uint8_t bin2bcd (uint8_t val) { return val + 6 * (val / 10); }
-
 };
 
 
