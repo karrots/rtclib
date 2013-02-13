@@ -20,7 +20,7 @@ public:
     uint8_t dayOfWeek() const;
 
     // 32-bit times as seconds since 1/1/2000
-    long get() const;   
+    long get() const;
 
 protected:
     uint8_t yOff, m, d, hh, mm, ss;
@@ -29,7 +29,7 @@ protected:
 // RTC based on the DS1307 chip connected via I2C and the Wire library
 class RTC_DS1307 {
 public:
-    
+
     // SQW/OUT frequencies.
     enum Frequencies
     {
@@ -42,11 +42,12 @@ public:
     static void begin() {}
     static void adjust(const DateTime& dt);
     static DateTime now();
-    
+    static uint8_t isrunning();
+
     // SQW/OUT functions.
     void setSqwOutLevel(uint8_t level);
     void setSqwOutSignal(Frequencies frequency);
-    
+
     // RAM registers read/write functions. Address locations 08h to 3Fh.
     // Max length = 56 bytes.
     static uint8_t readByteInRam(uint8_t address);
@@ -58,6 +59,22 @@ public:
     static uint8_t bcd2bin (uint8_t val) { return val - 6 * (val >> 4); }
     static uint8_t bin2bcd (uint8_t val) { return val + 6 * (val / 10); }
 };
+
+
+// DS1388 version
+class RTC_DS1388 {
+public:
+    static void begin() {};
+    static void adjust(const DateTime& dt);
+    static DateTime now();
+    static uint8_t isrunning();
+
+    // utility functions
+    static uint8_t bcd2bin (uint8_t val) { return val - 6 * (val >> 4); }
+    static uint8_t bin2bcd (uint8_t val) { return val + 6 * (val / 10); }
+};
+
+
 
 // RTC based on the PCF8563 chip connected via I2C and the Wire library
 // contributed by @mariusster, see http://forum.jeelabs.net/comment/1902

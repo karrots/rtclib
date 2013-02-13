@@ -1,6 +1,8 @@
 About {#index}
 =====
 
+ElPaso: this clone of RTCLib has initial support for DS1388.
+
 **RTClib** is a lightweight date and time library for JeeNodes and Arduino's.
 
 Work in progress - see [this discussion][1] for some background info.
