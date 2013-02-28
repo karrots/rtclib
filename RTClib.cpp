@@ -428,7 +428,6 @@ void RTC_BQ32000::setCalibration(int8_t value) {
     if (value < -31) value = -31;
     val = (uint8_t) (value < 0) ? -value | (1<<BQ32000__CAL_S) : value;
     val |= readRegister(BQ32000_CAL_CFG1) & ~0x3f;
-    Serial.println(val, BIN);
     writeRegister(BQ32000_CAL_CFG1, val);
 }
 
