@@ -89,6 +89,42 @@ public:
     static uint8_t bin2bcd (uint8_t val) { return val + 6 * (val / 10); }
 };
 
+
+// TI BQ32000 I2C RTC
+class RTC_BQ32000 {
+public:
+    static void begin() {}
+    static void adjust(const DateTime& dt);
+    static DateTime now();
+    static uint8_t isrunning();
+
+    static void setIRQ(uint8_t state);
+    /* Set IRQ output state: 0=disabled, 1=1Hz, 2=512Hz. 
+     */
+    static void setIRQLevel(uint8_t level);
+    /* Set IRQ output active state to LOW or HIGH. 
+     */
+    static void setCalibration(int8_t value);
+    /* Sets the calibration value to given value in the range -31 - 31, which
+     * corresponds to -126ppm - +63ppm; see table 13 in th BQ32000 datasheet.
+     */
+    static void setCharger(int state);
+    /* If using a super capacitor instead of a battery for backup power, use this
+       method to set the state of the trickle charger: 0=disabled, 1=low-voltage 
+       charge, 2=high-voltage charge. In low-voltage charge mode, the super cap is 
+       charged through a diode with a voltage drop of about 0.5V, so it will charge
+       up to VCC-0.5V. In high-voltage charge mode the diode is bypassed and the super 
+       cap will be charged up to VCC (make sure the charge voltage does not exceed your
+       super cap's voltage rating!!). */
+
+    // utility functions:
+    static uint8_t readRegister(uint8_t address);
+    static uint8_t writeRegister(uint8_t address, uint8_t value);
+    static uint8_t bcd2bin (uint8_t val) { return val - 6 * (val >> 4); }
+    static uint8_t bin2bcd (uint8_t val) { return val + 6 * (val / 10); }
+};
+
+
 // RTC using the internal millis() clock, has to be initialized before use
 // NOTE: this clock won't be correct once the millis() timer rolls over (>49d?)
 class RTC_Millis {
