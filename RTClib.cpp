@@ -2,9 +2,18 @@
 // 2010-02-04 <jc@wippler.nl> http://opensource.org/licenses/mit-license.php
 // 2012-11-08 RAM methods - idreammicro.com
 // 2012-11-14 SQW/OUT methods - idreammicro.com
+// 2012-01-12 DS1388 support
+// 2013-08-29 ENERGIA MSP430 support
 
 #include <Wire.h>
+// Energia support
+#ifndef ENERGIA
 #include <avr/pgmspace.h>
+#else
+#define pgm_read_word(data) *data
+#define pgm_read_byte(data) *data
+#define PROGMEM
+#endif
 #include "RTClib.h"
 #include <Arduino.h>
 
@@ -255,7 +264,7 @@ void RTC_DS1307::writeBytesInRam(uint8_t address, uint8_t length, uint8_t* p_dat
 
 uint8_t RTC_DS1307::isrunning(void) {
   Wire.beginTransmission(DS1307_ADDRESS);
-  Wire.write(0x00);	
+  Wire.write((byte) 0);
   Wire.endTransmission();
 
   Wire.requestFrom(DS1307_ADDRESS, 1);
@@ -305,7 +314,7 @@ DateTime RTC_DS1388::now() {
 
 uint8_t RTC_DS1388::isrunning() {
   Wire.beginTransmission(DS1307_ADDRESS);
-  Wire.write((byte)0x0b);	
+  Wire.write((byte)0x0b);
   Wire.endTransmission();
 
   Wire.requestFrom(DS1307_ADDRESS, 1);
