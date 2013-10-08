@@ -27,6 +27,11 @@
 #define RTC_DS1307__SQWE        0x04
 #define RTC_DS1307__OUT         0x07
 
+// DS1388 Control register bits
+#define DS1388_EEPROM_0         0x01
+#define DS1388_EEPROM_1         0x02
+
+
 #define PCF8563_ADDRESS         0x51
 #define PCF8563_SEC_ADDR        0x02
 
@@ -45,7 +50,7 @@
 #define BQ32000__TCH2_BIT       0x05 // TCH2 - Trickle charger switch 2
 #define BQ32000__TCFE           0x06 // CFG2 - Trickle FET control
 // BQ32000 config values:
-#define BQ32000_CHARGE_ENABLE   0x05 // CFG2 - Trickle charger switch 1 enable 
+#define BQ32000_CHARGE_ENABLE   0x05 // CFG2 - Trickle charger switch 1 enable
 #define BQ32000_SFKEY1_VAL      0x5E
 #define BQ32000_SFKEY2_VAL      0xC7
 #define BQ32000_FTF_1HZ         0x01
@@ -322,6 +327,76 @@ uint8_t RTC_DS1388::isrunning() {
   return !(ss>>7); //OSF flag bit
 }
 
+/*
+    log("EEPROM check");
+    //RTC.EEPROMWrite(0, 0x13);
+    Wire.beginTransmission(0x68 | 0x01);
+    Wire.write((byte)0);
+    //sprintf(buf, "W-ET: %04d", Wire.endTransmission(false));
+    //log(buf);
+    //Wire.beginTransmission(0x68 | 0x01);
+    Wire.write((byte)19);
+    sprintf(buf, "W-ET-STOP: %04d", Wire.endTransmission());
+    log(buf);
+
+    // Read
+    char val;
+    Wire.beginTransmission(0x68 | 0x01);
+    Wire.write((byte)0);
+    sprintf(buf, "R-ET: %04d", Wire.endTransmission(true));
+    log(buf);
+    Wire.requestFrom(0x68 | 0x01, 1);
+    while(Wire.available())    // slave may send less than requested
+    {
+        val = Wire.read();    // receive a byte as character
+        sprintf(buf, "Read: %04d", (int)val);
+        log(buf);
+    }
+
+*/
+
+void RTC_DS1388::EEPROMWrite(int pos, uint8_t c) {
+  uint8_t rel_pos = pos % 256;
+  if(pos > 255){
+    Wire.beginTransmission(DS1307_ADDRESS | DS1388_EEPROM_1);
+  } else {
+    Wire.beginTransmission(DS1307_ADDRESS | DS1388_EEPROM_0);
+  }
+  // Set address
+  Wire.write((byte)rel_pos);
+  // Wite data
+  Wire.write((byte)c);
+  Wire.endTransmission();
+#if defined(__MSP430G2553__)
+  delay(10); // Needed on MSP430 !!
+#endif
+}
+
+
+uint8_t RTC_DS1388::EEPROMRead(int pos) {
+  uint8_t rel_pos = pos % 256;
+  if(pos > 255){
+    Wire.beginTransmission(DS1307_ADDRESS | DS1388_EEPROM_1);
+  } else {
+    Wire.beginTransmission(DS1307_ADDRESS | DS1388_EEPROM_0);
+  }
+  // Set address
+  Wire.write((byte)rel_pos);
+  Wire.endTransmission(true); // Stay open
+  // Request one byte
+  if(pos > 255){
+    Wire.requestFrom(DS1307_ADDRESS | DS1388_EEPROM_1, 1);
+  } else {
+    Wire.requestFrom(DS1307_ADDRESS | DS1388_EEPROM_0, 1);
+  }
+  uint8_t c = Wire.read();
+#if defined(__MSP430G2553__)
+  delay(10); // Needed on MSP430 !!
+#endif
+  return c;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // RTC_PCF8563 implementation
 // contributed by @mariusster, see http://forum.jeelabs.net/comment/1902
@@ -399,7 +474,7 @@ DateTime RTC_BQ32000::now() {
 }
 
 void RTC_BQ32000::setIRQ(uint8_t state) {
-    /* Set IRQ square wave output state: 0=disabled, 1=1Hz, 2=512Hz. 
+    /* Set IRQ square wave output state: 0=disabled, 1=1Hz, 2=512Hz.
      */
   uint8_t reg, value;
     if (state) {
@@ -417,8 +492,8 @@ void RTC_BQ32000::setIRQ(uint8_t state) {
 }
 
 void RTC_BQ32000::setIRQLevel(uint8_t level) {
-    /* Set IRQ output level when IRQ square wave output is disabled to 
-     * LOW or HIGH. 
+    /* Set IRQ output level when IRQ square wave output is disabled to
+     * LOW or HIGH.
      */
     uint8_t value;
     // The IRQ active level bit is in the same register as the calibration
@@ -442,15 +517,15 @@ void RTC_BQ32000::setCalibration(int8_t value) {
 
 void RTC_BQ32000::setCharger(int state) {
     /* If using a super capacitor instead of a battery for backup power, use this
-     * method to set the state of the trickle charger: 0=disabled, 1=low-voltage 
-     * charge, 2=high-voltage charge. In low-voltage charge mode, the super cap is 
+     * method to set the state of the trickle charger: 0=disabled, 1=low-voltage
+     * charge, 2=high-voltage charge. In low-voltage charge mode, the super cap is
      * charged through a diode with a voltage drop of about 0.5V, so it will charge
-     * up to VCC-0.5V. In high-voltage charge mode the diode is bypassed and the super 
+     * up to VCC-0.5V. In high-voltage charge mode the diode is bypassed and the super
      * cap will be charged up to VCC (make sure the charge voltage does not exceed your
-     * super cap's voltage rating!!). 
+     * super cap's voltage rating!!).
      */
-    // First disable charger regardless of state (prevents it from 
-    // possible starting up in the high voltage mode when the low 
+    // First disable charger regardless of state (prevents it from
+    // possible starting up in the high voltage mode when the low
     // voltage mode is requested):
     uint8_t value;
     writeRegister(BQ32000_TCH2, 0);
@@ -467,18 +542,18 @@ void RTC_BQ32000::setCharger(int state) {
 
 
 uint8_t RTC_BQ32000::readRegister(uint8_t address) {
-    /* Read and return the value in the register at the given address. 
+    /* Read and return the value in the register at the given address.
      */
     Wire.beginTransmission(BQ32000_ADDRESS);
     Wire.write((byte) address);
     Wire.endTransmission();
     Wire.requestFrom(DS1307_ADDRESS, 1);
     // Get register state:
-    return Wire.read();    
+    return Wire.read();
 }
 
 uint8_t RTC_BQ32000::writeRegister(uint8_t address, uint8_t value) {
-    /* Write the given value to the register at the given address. 
+    /* Write the given value to the register at the given address.
      */
     Wire.beginTransmission(BQ32000_ADDRESS);
     Wire.write(address);
