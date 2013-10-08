@@ -69,6 +69,10 @@ public:
     static DateTime now();
     static uint8_t isrunning();
 
+    // EEPROM
+    static void EEPROMWrite(int pos, uint8_t c);
+    static uint8_t EEPROMRead(int pos);
+
     // utility functions
     static uint8_t bcd2bin (uint8_t val) { return val - 6 * (val >> 4); }
     static uint8_t bin2bcd (uint8_t val) { return val + 6 * (val / 10); }
@@ -99,10 +103,10 @@ public:
     static uint8_t isrunning();
 
     static void setIRQ(uint8_t state);
-    /* Set IRQ output state: 0=disabled, 1=1Hz, 2=512Hz. 
+    /* Set IRQ output state: 0=disabled, 1=1Hz, 2=512Hz.
      */
     static void setIRQLevel(uint8_t level);
-    /* Set IRQ output active state to LOW or HIGH. 
+    /* Set IRQ output active state to LOW or HIGH.
      */
     static void setCalibration(int8_t value);
     /* Sets the calibration value to given value in the range -31 - 31, which
@@ -110,10 +114,10 @@ public:
      */
     static void setCharger(int state);
     /* If using a super capacitor instead of a battery for backup power, use this
-       method to set the state of the trickle charger: 0=disabled, 1=low-voltage 
-       charge, 2=high-voltage charge. In low-voltage charge mode, the super cap is 
+       method to set the state of the trickle charger: 0=disabled, 1=low-voltage
+       charge, 2=high-voltage charge. In low-voltage charge mode, the super cap is
        charged through a diode with a voltage drop of about 0.5V, so it will charge
-       up to VCC-0.5V. In high-voltage charge mode the diode is bypassed and the super 
+       up to VCC-0.5V. In high-voltage charge mode the diode is bypassed and the super
        cap will be charged up to VCC (make sure the charge voltage does not exceed your
        super cap's voltage rating!!). */
 
