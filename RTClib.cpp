@@ -327,33 +327,6 @@ uint8_t RTC_DS1388::isrunning() {
   return !(ss>>7); //OSF flag bit
 }
 
-/*
-    log("EEPROM check");
-    //RTC.EEPROMWrite(0, 0x13);
-    Wire.beginTransmission(0x68 | 0x01);
-    Wire.write((byte)0);
-    //sprintf(buf, "W-ET: %04d", Wire.endTransmission(false));
-    //log(buf);
-    //Wire.beginTransmission(0x68 | 0x01);
-    Wire.write((byte)19);
-    sprintf(buf, "W-ET-STOP: %04d", Wire.endTransmission());
-    log(buf);
-
-    // Read
-    char val;
-    Wire.beginTransmission(0x68 | 0x01);
-    Wire.write((byte)0);
-    sprintf(buf, "R-ET: %04d", Wire.endTransmission(true));
-    log(buf);
-    Wire.requestFrom(0x68 | 0x01, 1);
-    while(Wire.available())    // slave may send less than requested
-    {
-        val = Wire.read();    // receive a byte as character
-        sprintf(buf, "Read: %04d", (int)val);
-        log(buf);
-    }
-
-*/
 
 void RTC_DS1388::EEPROMWrite(int pos, uint8_t c) {
   uint8_t rel_pos = pos % 256;
