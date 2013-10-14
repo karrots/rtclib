@@ -70,8 +70,11 @@ public:
     static uint8_t isrunning();
 
     // EEPROM
-    static void EEPROMWrite(int pos, uint8_t c);
-    static uint8_t EEPROMRead(int pos);
+    static uint8_t getEEPROMBank(uint16_t pos);
+    static void EEPROMWrite(uint16_t pos, uint8_t c);
+    static uint8_t EEPROMRead(uint16_t pos);
+    static void EEPROMWritePage(uint8_t page, uint8_t* data);
+    static void EEPROMReadPage(uint8_t page, uint8_t* buffer);
 
     // utility functions
     static uint8_t bcd2bin (uint8_t val) { return val - 6 * (val >> 4); }

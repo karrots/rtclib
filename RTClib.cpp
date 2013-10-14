@@ -327,47 +327,93 @@ uint8_t RTC_DS1388::isrunning() {
   return !(ss>>7); //OSF flag bit
 }
 
-
-void RTC_DS1388::EEPROMWrite(int pos, uint8_t c) {
-  uint8_t rel_pos = pos % 256;
+uint8_t RTC_DS1388::getEEPROMBank(uint16_t pos) {
   if(pos > 255){
-    Wire.beginTransmission(DS1307_ADDRESS | DS1388_EEPROM_1);
+    return DS1307_ADDRESS | DS1388_EEPROM_1;
   } else {
-    Wire.beginTransmission(DS1307_ADDRESS | DS1388_EEPROM_0);
+    return DS1307_ADDRESS | DS1388_EEPROM_0;
   }
+}
+
+/*
+ * DS1388 has 512 bytes EEPROM in 2 banks of 256 bytes each
+ */
+void RTC_DS1388::EEPROMWrite(uint16_t pos, uint8_t c) {
+  if(pos >= 512){
+    return;
+  }
+  uint8_t rel_pos = pos % 256;
   // Set address
+  Wire.beginTransmission(getEEPROMBank(pos));
   Wire.write((byte)rel_pos);
   // Wite data
   Wire.write((byte)c);
   Wire.endTransmission();
-#if defined(__MSP430G2553__)
+#ifdef ENERGIA
   delay(10); // Needed on MSP430 !!
 #endif
 }
 
 
-uint8_t RTC_DS1388::EEPROMRead(int pos) {
-  uint8_t rel_pos = pos % 256;
-  if(pos > 255){
-    Wire.beginTransmission(DS1307_ADDRESS | DS1388_EEPROM_1);
-  } else {
-    Wire.beginTransmission(DS1307_ADDRESS | DS1388_EEPROM_0);
+uint8_t RTC_DS1388::EEPROMRead(uint16_t pos) {
+  if(pos >= 512){
+    return 0;
   }
+  uint8_t rel_pos = pos % 256;
+  Wire.beginTransmission(getEEPROMBank(pos));
   // Set address
   Wire.write((byte)rel_pos);
   Wire.endTransmission(true); // Stay open
   // Request one byte
-  if(pos > 255){
-    Wire.requestFrom(DS1307_ADDRESS | DS1388_EEPROM_1, 1);
-  } else {
-    Wire.requestFrom(DS1307_ADDRESS | DS1388_EEPROM_0, 1);
-  }
+  Wire.requestFrom(getEEPROMBank(pos), 1);
   uint8_t c = Wire.read();
-#if defined(__MSP430G2553__)
+#ifdef ENERGIA
   delay(10); // Needed on MSP430 !!
 #endif
   return c;
 }
+
+/*
+ * DS1388 has 512 bytes EEPROM in 2 banks of 256 bytes each.
+ * EEPROM is arranged in 64 pages of 8 bytes each.
+ * Page operations take a page number (0-63) and write/read 8 bytes
+ */
+void RTC_DS1388::EEPROMWritePage(uint8_t page, uint8_t *data) {
+  if(page >= 64){
+    return;
+  }
+  Wire.beginTransmission(getEEPROMBank((uint16_t)page * 8));
+  uint8_t rel_pos =((uint16_t)page * 8) % 256;
+  Wire.write((byte)rel_pos);
+  for(uint8_t i=0; i<8; i++){
+    Wire.write((byte)data[i]);
+  }
+  Wire.endTransmission();
+#ifdef ENERGIA
+  delay(10); // Needed on MSP430 !!
+#endif
+}
+
+void RTC_DS1388::EEPROMReadPage(uint8_t page, uint8_t *data) {
+  if(page >= 64){
+    return;
+  }
+  Wire.beginTransmission(getEEPROMBank((uint16_t)page * 8));
+  uint8_t rel_pos =((uint16_t)page * 8) % 256;
+  // Set address
+  Wire.write((byte)rel_pos);
+  Wire.endTransmission(true); // Stay open
+  // Request 8 byte
+  Wire.requestFrom(getEEPROMBank((uint16_t)page * 8), 8);
+  for(uint8_t i=0; i<8; i++){
+    data[i] = Wire.read();
+  }
+  Wire.endTransmission();
+#ifdef ENERGIA
+  delay(10); // Needed on MSP430 !!
+#endif
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
