@@ -365,7 +365,7 @@ uint8_t RTC_DS1388::EEPROMRead(uint16_t pos) {
   Wire.write((byte)rel_pos);
   Wire.endTransmission(true); // Stay open
   // Request one byte
-  Wire.requestFrom(getEEPROMBank(pos), 1);
+  Wire.requestFrom(getEEPROMBank(pos), (uint8_t)1);
   uint8_t c = Wire.read();
 #ifdef ENERGIA
   delay(10); // Needed on MSP430 !!
@@ -404,7 +404,7 @@ void RTC_DS1388::EEPROMReadPage(uint8_t page, uint8_t *data) {
   Wire.write((byte)rel_pos);
   Wire.endTransmission(true); // Stay open
   // Request 8 byte
-  Wire.requestFrom(getEEPROMBank((uint16_t)page * 8), 8);
+  Wire.requestFrom(getEEPROMBank((uint16_t)page * 8), (uint8_t)8);
   for(uint8_t i=0; i<8; i++){
     data[i] = Wire.read();
   }
