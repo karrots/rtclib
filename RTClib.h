@@ -63,6 +63,9 @@ public:
 
 // DS1388 version
 class RTC_DS1388 {
+protected:
+    static uint8_t WDSeconds;
+    static uint8_t WDTSeconds;
 public:
     static void begin() {};
     static void adjust(const DateTime& dt);
@@ -75,6 +78,10 @@ public:
     static uint8_t EEPROMRead(uint16_t pos);
     static void EEPROMWritePage(uint8_t page, uint8_t* data);
     static void EEPROMReadPage(uint8_t page, uint8_t* buffer);
+
+    //Watchdog
+    static void startWatchdogTimer(uint8_t Seconds, uint8_t TSeconds);
+    static void resetWatchdogTimer();
 
     // utility functions
     static uint8_t bcd2bin (uint8_t val) { return val - 6 * (val >> 4); }

@@ -222,14 +222,14 @@ void RTC_DS1307::setSqwOutSignal(Frequencies frequency) {
         break;
     }
     Wire.beginTransmission(DS1307_ADDRESS);
-  	Wire.write(DS1307_CONTROL_REGISTER);
-  	Wire.write(value);
+    Wire.write(DS1307_CONTROL_REGISTER);
+    Wire.write(value);
     Wire.endTransmission();
 }
 
 uint8_t RTC_DS1307::readByteInRam(uint8_t address) {
     Wire.beginTransmission(DS1307_ADDRESS);
-  	Wire.write(address);
+    Wire.write(address);
     Wire.endTransmission();
 
     Wire.requestFrom(DS1307_ADDRESS, 1);
@@ -241,7 +241,7 @@ uint8_t RTC_DS1307::readByteInRam(uint8_t address) {
 
 void RTC_DS1307::readBytesInRam(uint8_t address, uint8_t length, uint8_t* p_data) {
     Wire.beginTransmission(DS1307_ADDRESS);
-  	Wire.write(address);
+    Wire.write(address);
     Wire.endTransmission();
 
     Wire.requestFrom(DS1307_ADDRESS, (int)length);
@@ -253,17 +253,17 @@ void RTC_DS1307::readBytesInRam(uint8_t address, uint8_t length, uint8_t* p_data
 
 void RTC_DS1307::writeByteInRam(uint8_t address, uint8_t data) {
     Wire.beginTransmission(DS1307_ADDRESS);
-  	Wire.write(address);
-  	Wire.write(data);
+    Wire.write(address);
+    Wire.write(data);
     Wire.endTransmission();
 }
 
 void RTC_DS1307::writeBytesInRam(uint8_t address, uint8_t length, uint8_t* p_data) {
     Wire.beginTransmission(DS1307_ADDRESS);
-  	Wire.write(address);
-  	for (uint8_t i = 0; i < length; i++) {
-  	  	Wire.write(p_data[i]);
-  	}
+    Wire.write(address);
+    for (uint8_t i = 0; i < length; i++) {
+        Wire.write(p_data[i]);
+    }
     Wire.endTransmission();
 }
 
@@ -279,6 +279,9 @@ uint8_t RTC_DS1307::isrunning(void) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // DS 1388 implementation
+uint8_t RTC_DS1388::WDSeconds = bin2bcd(60); //default to 60 seconds;
+uint8_t RTC_DS1388::WDTSeconds = bin2bcd(0); //default to 60.00 seconds;
+
 
 void RTC_DS1388::adjust(const DateTime& dt) {
   Wire.beginTransmission(DS1307_ADDRESS);
@@ -295,7 +298,7 @@ void RTC_DS1388::adjust(const DateTime& dt) {
 
   Wire.beginTransmission(DS1307_ADDRESS);
   Wire.write((byte) 0x0b);
-  Wire.write((byte) 0x00);			//clear the 'time is invalid ' flag bit (OSF)
+  Wire.write((byte) 0x00);      //clear the 'time is invalid ' flag bit (OSF)
   Wire.endTransmission();
 }
 
@@ -414,7 +417,33 @@ void RTC_DS1388::EEPROMReadPage(uint8_t page, uint8_t *data) {
 #endif
 }
 
+void RTC_DS1388::startWatchdogTimer(uint8_t Seconds, uint8_t TSeconds) {
+  WDSeconds = bin2bcd(Seconds);
+  WDTSeconds = bin2bcd(TSeconds);
+  resetWatchdogTimer();
+} 
 
+void RTC_DS1388::resetWatchdogTimer() {
+  //Disable the RTC watchdog first.
+  Wire.beginTransmission(DS1307_ADDRESS);  
+    Wire.write(0x0b);
+    Wire.write(0x00); //clear WF bit
+    Wire.write(0x00); //turn off WD
+  Wire.endTransmission();
+
+  //Set the watchdog timer to the desired time
+  Wire.beginTransmission(DS1307_ADDRESS);
+    Wire.write(0x08);
+    Wire.write(WDTSeconds);  //08h    time 00-99 first nibble is Tenths of Seconds, second nibble is Hundredths of Seconds
+    Wire.write(WDSeconds);  //09h - time 00-99 first nibble is Ten Seconds, second nibble is seconds
+  Wire.endTransmission();
+
+  //Enable the watchdog timer in the RTC.  0x0c -> 0x03 (WDE and WDE/RST)
+  Wire.beginTransmission(DS1307_ADDRESS);
+    Wire.write(0x0c);
+    Wire.write(0x03);
+  Wire.endTransmission();
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // RTC_PCF8563 implementation
@@ -499,11 +528,11 @@ void RTC_BQ32000::setIRQ(uint8_t state) {
     if (state) {
       // Setting the frequency is a bit complicated on the BQ32000:
         Wire.beginTransmission(BQ32000_ADDRESS);
-	Wire.write(BQ32000_SFKEY1);
-	Wire.write(BQ32000_SFKEY1_VAL);
-	Wire.write(BQ32000_SFKEY2_VAL);
-	Wire.write((state == 1) ? BQ32000_FTF_1HZ : BQ32000_FTF_512HZ);
-	Wire.endTransmission();
+  Wire.write(BQ32000_SFKEY1);
+  Wire.write(BQ32000_SFKEY1_VAL);
+  Wire.write(BQ32000_SFKEY2_VAL);
+  Wire.write((state == 1) ? BQ32000_FTF_1HZ : BQ32000_FTF_512HZ);
+  Wire.endTransmission();
     }
     value = readRegister(BQ32000_CAL_CFG1);
     value = (!state) ? value & ~(1<<BQ32000__FT) : value | (1<<BQ32000__FT);
