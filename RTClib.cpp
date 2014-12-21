@@ -166,21 +166,21 @@ long DateTime::get() const {
 
 void RTC_DS1307::adjust(const DateTime& dt) {
     Wire.beginTransmission(DS1307_ADDRESS);
-    Wire.write((byte) 0);
-    Wire.write(bin2bcd(dt.second()));
-    Wire.write(bin2bcd(dt.minute()));
-    Wire.write(bin2bcd(dt.hour()));
-    Wire.write(bin2bcd(0));
-    Wire.write(bin2bcd(dt.day()));
-    Wire.write(bin2bcd(dt.month()));
-    Wire.write(bin2bcd(dt.year() - 2000));
-    Wire.write((byte) 0);
+      Wire.write((byte) 0);
+      Wire.write(bin2bcd(dt.second()));
+      Wire.write(bin2bcd(dt.minute()));
+      Wire.write(bin2bcd(dt.hour()));
+      Wire.write(bin2bcd(0));
+      Wire.write(bin2bcd(dt.day()));
+      Wire.write(bin2bcd(dt.month()));
+      Wire.write(bin2bcd(dt.year() - 2000));
+      Wire.write((byte) 0);
     Wire.endTransmission();
 }
 
 DateTime RTC_DS1307::now() {
     Wire.beginTransmission(DS1307_ADDRESS);
-    Wire.write((byte) 0);
+      Wire.write((byte) 0);
     Wire.endTransmission();
 
     Wire.requestFrom(DS1307_ADDRESS, 7);
@@ -198,8 +198,8 @@ DateTime RTC_DS1307::now() {
 void RTC_DS1307::setSqwOutLevel(uint8_t level) {
     uint8_t value = (level == LOW) ? 0x00 : (1 << RTC_DS1307__OUT);
     Wire.beginTransmission(DS1307_ADDRESS);
-    Wire.write(DS1307_CONTROL_REGISTER);
-    Wire.write(value);
+      Wire.write(DS1307_CONTROL_REGISTER);
+      Wire.write(value);
     Wire.endTransmission();
 }
 
@@ -222,14 +222,14 @@ void RTC_DS1307::setSqwOutSignal(Frequencies frequency) {
         break;
     }
     Wire.beginTransmission(DS1307_ADDRESS);
-    Wire.write(DS1307_CONTROL_REGISTER);
-    Wire.write(value);
+      Wire.write(DS1307_CONTROL_REGISTER);
+      Wire.write(value);
     Wire.endTransmission();
 }
 
 uint8_t RTC_DS1307::readByteInRam(uint8_t address) {
     Wire.beginTransmission(DS1307_ADDRESS);
-    Wire.write(address);
+      Wire.write(address);
     Wire.endTransmission();
 
     Wire.requestFrom(DS1307_ADDRESS, 1);
@@ -241,7 +241,7 @@ uint8_t RTC_DS1307::readByteInRam(uint8_t address) {
 
 void RTC_DS1307::readBytesInRam(uint8_t address, uint8_t length, uint8_t* p_data) {
     Wire.beginTransmission(DS1307_ADDRESS);
-    Wire.write(address);
+      Wire.write(address);
     Wire.endTransmission();
 
     Wire.requestFrom(DS1307_ADDRESS, (int)length);
@@ -253,23 +253,23 @@ void RTC_DS1307::readBytesInRam(uint8_t address, uint8_t length, uint8_t* p_data
 
 void RTC_DS1307::writeByteInRam(uint8_t address, uint8_t data) {
     Wire.beginTransmission(DS1307_ADDRESS);
-    Wire.write(address);
-    Wire.write(data);
+      Wire.write(address);
+      Wire.write(data);
     Wire.endTransmission();
 }
 
 void RTC_DS1307::writeBytesInRam(uint8_t address, uint8_t length, uint8_t* p_data) {
     Wire.beginTransmission(DS1307_ADDRESS);
-    Wire.write(address);
-    for (uint8_t i = 0; i < length; i++) {
-        Wire.write(p_data[i]);
-    }
+      Wire.write(address);
+      for (uint8_t i = 0; i < length; i++) {
+             Wire.write(p_data[i]);
+      }
     Wire.endTransmission();
 }
 
 uint8_t RTC_DS1307::isrunning(void) {
   Wire.beginTransmission(DS1307_ADDRESS);
-  Wire.write((byte) 0);
+    Wire.write((byte) 0);
   Wire.endTransmission();
 
   Wire.requestFrom(DS1307_ADDRESS, 1);
@@ -285,26 +285,26 @@ uint8_t RTC_DS1388::WDTSeconds = bin2bcd(0); //default to 60.00 seconds;
 
 void RTC_DS1388::adjust(const DateTime& dt) {
   Wire.beginTransmission(DS1307_ADDRESS);
-  Wire.write((byte) 0);
-  Wire.write(bin2bcd(0)); // hundreds of seconds 0x00
-  Wire.write(bin2bcd(dt.second())); // 0x01
-  Wire.write(bin2bcd(dt.minute())); // 0x02
-  Wire.write(bin2bcd(dt.hour())); // 0x03
-  Wire.write(bin2bcd(0)); // 0x04
-  Wire.write(bin2bcd(dt.day())); // 0x05
-  Wire.write(bin2bcd(dt.month())); // 0x06
-  Wire.write(bin2bcd(dt.year() - 2000)); // 0x07
+    Wire.write((byte) 0);
+    Wire.write(bin2bcd(0)); // hundreds of seconds 0x00
+    Wire.write(bin2bcd(dt.second())); // 0x01
+    Wire.write(bin2bcd(dt.minute())); // 0x02
+    Wire.write(bin2bcd(dt.hour())); // 0x03
+    Wire.write(bin2bcd(0)); // 0x04
+    Wire.write(bin2bcd(dt.day())); // 0x05
+    Wire.write(bin2bcd(dt.month())); // 0x06
+    Wire.write(bin2bcd(dt.year() - 2000)); // 0x07
   Wire.endTransmission();
 
   Wire.beginTransmission(DS1307_ADDRESS);
-  Wire.write((byte) 0x0b);
-  Wire.write((byte) 0x00);      //clear the 'time is invalid ' flag bit (OSF)
+    Wire.write((byte) 0x0b);
+    Wire.write((byte) 0x00);      //clear the 'time is invalid ' flag bit (OSF)
   Wire.endTransmission();
 }
 
 DateTime RTC_DS1388::now() {
   Wire.beginTransmission(DS1307_ADDRESS);
-  Wire.write((byte) 0);
+    Wire.write((byte) 0);
   Wire.endTransmission();
 
   Wire.requestFrom(DS1307_ADDRESS, 8);
@@ -322,7 +322,7 @@ DateTime RTC_DS1388::now() {
 
 uint8_t RTC_DS1388::isrunning() {
   Wire.beginTransmission(DS1307_ADDRESS);
-  Wire.write((byte)0x0b);
+    Wire.write((byte)0x0b);
   Wire.endTransmission();
 
   Wire.requestFrom(DS1307_ADDRESS, 1);
@@ -348,9 +348,9 @@ void RTC_DS1388::EEPROMWrite(uint16_t pos, uint8_t c) {
   uint8_t rel_pos = pos % 256;
   // Set address
   Wire.beginTransmission(getEEPROMBank(pos));
-  Wire.write((byte)rel_pos);
-  // Wite data
-  Wire.write((byte)c);
+    Wire.write((byte)rel_pos);
+    // Wite data
+    Wire.write((byte)c);
   Wire.endTransmission();
 #ifdef ENERGIA
   delay(10); // Needed on MSP430 !!
@@ -527,12 +527,12 @@ void RTC_BQ32000::setIRQ(uint8_t state) {
   uint8_t reg, value;
     if (state) {
       // Setting the frequency is a bit complicated on the BQ32000:
-        Wire.beginTransmission(BQ32000_ADDRESS);
-  Wire.write(BQ32000_SFKEY1);
-  Wire.write(BQ32000_SFKEY1_VAL);
-  Wire.write(BQ32000_SFKEY2_VAL);
-  Wire.write((state == 1) ? BQ32000_FTF_1HZ : BQ32000_FTF_512HZ);
-  Wire.endTransmission();
+      Wire.beginTransmission(BQ32000_ADDRESS);
+      Wire.write(BQ32000_SFKEY1);
+      Wire.write(BQ32000_SFKEY1_VAL);
+      Wire.write(BQ32000_SFKEY2_VAL);
+      Wire.write((state == 1) ? BQ32000_FTF_1HZ : BQ32000_FTF_512HZ);
+      Wire.endTransmission();
     }
     value = readRegister(BQ32000_CAL_CFG1);
     value = (!state) ? value & ~(1<<BQ32000__FT) : value | (1<<BQ32000__FT);
