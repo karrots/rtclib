@@ -11,6 +11,8 @@ void setup () {
     Wire.begin();
     RTC.begin();
     
+    // Enable the oscillator output
+    RTC.setSqwOutLevel(1);
     // Set SQW/Out signal frequency to 1 Hz.
     RTC.setSqwOutSignal(RTC_DS1307::Frequency_1Hz);
 }
