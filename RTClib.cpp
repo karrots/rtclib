@@ -421,11 +421,11 @@ void RTC_DS1388::startWatchdogTimer(uint8_t Seconds, uint8_t TSeconds) {
   WDSeconds = bin2bcd(Seconds);
   WDTSeconds = bin2bcd(TSeconds);
   resetWatchdogTimer();
-} 
+}
 
 void RTC_DS1388::resetWatchdogTimer() {
   //Disable the RTC watchdog first.
-  Wire.beginTransmission(DS1307_ADDRESS);  
+  Wire.beginTransmission(DS1307_ADDRESS);
     Wire.write(0x0b);
     Wire.write(0x00); //clear WF bit
     Wire.write(0x00); //turn off WD
@@ -509,7 +509,7 @@ DateTime RTC_BQ32000::now() {
     Wire.write((byte) 0);
     Wire.endTransmission();
 
-    Wire.requestFrom(DS1307_ADDRESS, 7);
+    Wire.requestFrom(BQ32000_ADDRESS, 7);
     uint8_t ss = bcd2bin(Wire.read());
     uint8_t mm = bcd2bin(Wire.read());
     uint8_t hh = bcd2bin(Wire.read());
@@ -595,7 +595,7 @@ uint8_t RTC_BQ32000::readRegister(uint8_t address) {
     Wire.beginTransmission(BQ32000_ADDRESS);
     Wire.write((byte) address);
     Wire.endTransmission();
-    Wire.requestFrom(DS1307_ADDRESS, 1);
+    Wire.requestFrom(BQ32000_ADDRESS, 1);
     // Get register state:
     return Wire.read();
 }
